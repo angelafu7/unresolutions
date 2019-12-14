@@ -6,7 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+# Load necessary packages
+
+knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(readxl)
 library(janitor)
@@ -14,19 +17,161 @@ library(janitor)
 
 ## Clean Data
 
-```{r}
+```{r data-cleaning}
+
+# Read in data
+
 un <- read_csv(file = "UNdata.csv")
+
+# Clean data. Remove unnecessary variables and eliminate entries belonging to non-member countries.
 
 un_clean <- un %>%
   clean_names() %>%
   filter(member == "1") %>%
   select(rcid, vote, country, countryname, year, session, unres, short, descr, importantvote, me, nu, di, co, hr, ec) %>%
-  filter(year > "1985") %>%
   distinct()
 ```
 
 
-```{r}
+```{r us-voting-trends}
+
+# This cleans the dataset to eliminate non-US entries. I also renamed some of the entries so that it is clearer what they represent. 
+
+USvotes <- un_clean %>%
+  filter(country=="USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvotes[1, 1] = "Yes"
+USvotes[2, 1] = "Abstain"
+USvotes[3, 1] = "No"
+
+USvotes_plot <- ggplot(USvotes, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Vote Distribution",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+# This is the data-cleaning and plot for US votes on resolutions about the Palestinian conflict.
+
+USvotesme <- un_clean %>%
+  filter(me == 1) %>%
+  filter(country == "USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvotesme[1,1] = "Yes"
+USvotesme[2,1] = "Abstain"
+USvotesme[3,1] = "No"
+
+USvotesme_plot <- ggplot(USvotesme, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Votes on Resolutions About the Palestinian Conflict",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+# This is the data-cleaning and plot for US votes on resolutions about nuclear weapons.
+
+USvotesnu <- un_clean %>%
+  filter(nu == 1) %>%
+  filter(country == "USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvotesnu[1,1] = "Yes"
+USvotesnu[2,1] = "Abstain"
+USvotesnu[3,1] = "No"
+
+USvotesnu_plot <- ggplot(USvotesnu, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Votes on Resolutions About Nuclear Weapons and Nuclear Material",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+# This is the data-cleaning and plot for US votes on resolutions about arms control and disarmament.
+
+USvotesdi <- un_clean %>%
+  filter(di == 1) %>%
+  filter(country == "USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvotesdi[1,1] = "Yes"
+USvotesdi[2,1] = "Abstain"
+USvotesdi[3,1] = "No"
+
+USvotesdi_plot <- ggplot(USvotesdi, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Votes on Resolutions About Arms Control and Disarmament",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+# This is the data-cleaning and plot for US votes on resolutions about colonialism.
+
+USvotesco <- un_clean %>%
+  filter(co == 1) %>%
+  filter(country == "USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvotesco[1,1] = "Yes"
+USvotesco[2,1] = "Abstain"
+USvotesco[3,1] = "No"
+
+USvotesco_plot <- ggplot(USvotesco, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Votes on Resolutions About Colonialism",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+# This is the data-cleaning and plot for US votes on resolutions about human rights.
+
+USvoteshr <- un_clean %>%
+  filter(hr == 1) %>%
+  filter(country == "USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvoteshr[1,1] = "Yes"
+USvoteshr[2,1] = "Abstain"
+USvoteshr[3,1] = "No"
+
+USvoteshr_plot <- ggplot(USvoteshr, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Votes on Resolutions About Human Rights",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+# This is the data-cleaning and plot for US votes on resolutions about economic development.
+
+USvotesec <- un_clean %>%
+  filter(ec == 1) %>%
+  filter(country == "USA") %>%
+  count(vote)%>%
+  slice(1:3)
+
+USvotesec[1,1] = "Yes"
+USvotesec[2,1] = "Abstain"
+USvotesec[3,1] = "No"
+
+USvotesec_plot <- ggplot(USvotesec, aes(x=vote, y=n)) +
+  geom_bar(stat="identity") + 
+  labs(title = "Votes on Resolutions About Economic Development",
+       x = "Vote",
+       y = "Number of Resolutions")+
+  scale_fill_brewer(palette="Blues")
+
+```
+
+```{r vote-distribution}
+#This cleans the data by first grouping votes for an individual resolution together and then determining how many Yes votes each resolution received. 
+
 vote_counts_yes <- un_clean %>%
   group_by(rcid) %>%
   count(vote) %>%
@@ -39,7 +184,8 @@ vote_counts_yes_plot <- ggplot(vote_counts_yes, aes(x=n))+
   geom_bar() +
   labs(x = "'Yes' Votes for a Resolution",
        y = "Count",
-       title = "Distribution of Resolutions by 'Yes' Votes")
+       title = "Distribution of Resolutions by 'Yes' Votes")+
+  scale_fill_brewer(palette="Blues")
 
 vote_counts_no <- un_clean %>%
   group_by(rcid) %>%
@@ -53,7 +199,8 @@ vote_counts_no_plot <- ggplot(vote_counts_no, aes(x=n))+
   geom_bar() +
   labs(x = "'No' Votes for a Resolution",
        y = "Count",
-       title = "Distribution of Resolutions by 'No' Votes")
+       title = "Distribution of Resolutions by 'No' Votes")+
+  scale_fill_brewer(palette="Blues")
 
 vote_counts_abstain <- un_clean %>%
   group_by(rcid) %>%
@@ -67,7 +214,14 @@ vote_counts_abstain_plot <- ggplot(vote_counts_abstain, aes(x=n))+
   geom_bar() +
   labs(x = "Abstentions for a Resolution",
        y = "Count",
-       title = "Distribution of Resolutions by Abstentions")
+       title = "Distribution of Resolutions by Abstentions")+
+  scale_fill_brewer(palette="Blues")
+
+```
+
+```{r un-activity}
+
+#This cleans the data by first grouping votes for an individual resolution together and then determining how many resolutions happened every year.
 
 resolutions_by_year <- un_clean %>%
   group_by(rcid) %>%
@@ -76,30 +230,29 @@ resolutions_by_year <- un_clean %>%
   count(year)
 
 resolutions_by_year_plot <- ggplot(resolutions_by_year, aes(x=year, y=n)) +
-  geom_point() +
+  geom_bar(stat="identity") +
   labs(x = "Year",
        y = "Number of Resolutions",
-       title = "Resolutions by Year")
+       title = "Resolutions by Year")+
+  scale_fill_brewer(palette="Blues")
 
-resolutions_by_session <- un_clean %>%
-  group_by(rcid) %>%
-  count(session) %>%
-  group_by(session) %>%
-  count(session)
+```
 
-resolutions_by_session_plot <- ggplot(resolutions_by_session, aes(x=session, y=n)) +
-  geom_point() +
-  labs(x = "Session",
-       y = "Number of Resolutions",
-       title = "Resolutions by Session")
+```{r rds}
 
-resolutions_by_session_plot
+# This first creates a list and then saves it to an RDS format so that it can easily be added to the shinyapp
 
 graphs = list(yes = vote_counts_yes_plot,
               no = vote_counts_no_plot,
               abstain = vote_counts_abstain_plot,
               year = resolutions_by_year_plot,
-              session = resolutions_by_session_plot)
+              usavotes = USvotes_plot,
+              usavotesme = USvotesme_plot,
+              usavotesnu = USvotesnu_plot,
+              usavotesdi = USvotesdi_plot,
+              usavotesco = USvotesco_plot,
+              usavoteshr = USvoteshr_plot,
+              usavotesec = USvotesec_plot)
 
 saveRDS(graphs, "UN-Resolutions/graphs.rds")
 
