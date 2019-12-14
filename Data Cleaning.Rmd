@@ -1,0 +1,107 @@
+---
+title: "Data Cleaning"
+author: "Angela Fu"
+date: "12/13/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(janitor)
+```
+
+## Clean Data
+
+```{r}
+un <- read_csv(file = "UNdata.csv")
+
+un_clean <- un %>%
+  clean_names() %>%
+  filter(member == "1") %>%
+  select(rcid, vote, country, countryname, year, session, unres, short, descr, importantvote, me, nu, di, co, hr, ec) %>%
+  filter(year > "1985") %>%
+  distinct()
+```
+
+
+```{r}
+vote_counts_yes <- un_clean %>%
+  group_by(rcid) %>%
+  count(vote) %>%
+  group_by(rcid) %>%
+  filter(vote == "1") %>%
+  count(n) %>%
+  arrange(desc(n))
+
+vote_counts_yes_plot <- ggplot(vote_counts_yes, aes(x=n))+
+  geom_bar() +
+  labs(x = "'Yes' Votes for a Resolution",
+       y = "Count",
+       title = "Distribution of Resolutions by 'Yes' Votes")
+
+vote_counts_no <- un_clean %>%
+  group_by(rcid) %>%
+  count(vote) %>%
+  group_by(rcid) %>%
+  filter(vote == "3") %>%
+  count(n) %>%
+  arrange(desc(n))
+
+vote_counts_no_plot <- ggplot(vote_counts_no, aes(x=n))+
+  geom_bar() +
+  labs(x = "'No' Votes for a Resolution",
+       y = "Count",
+       title = "Distribution of Resolutions by 'No' Votes")
+
+vote_counts_abstain <- un_clean %>%
+  group_by(rcid) %>%
+  count(vote) %>%
+  group_by(rcid) %>%
+  filter(vote == "2") %>%
+  count(n) %>%
+  arrange(desc(n))
+
+vote_counts_abstain_plot <- ggplot(vote_counts_abstain, aes(x=n))+
+  geom_bar() +
+  labs(x = "Abstentions for a Resolution",
+       y = "Count",
+       title = "Distribution of Resolutions by Abstentions")
+
+resolutions_by_year <- un_clean %>%
+  group_by(rcid) %>%
+  count(year) %>%
+  group_by(year) %>%
+  count(year)
+
+resolutions_by_year_plot <- ggplot(resolutions_by_year, aes(x=year, y=n)) +
+  geom_point() +
+  labs(x = "Year",
+       y = "Number of Resolutions",
+       title = "Resolutions by Year")
+
+resolutions_by_session <- un_clean %>%
+  group_by(rcid) %>%
+  count(session) %>%
+  group_by(session) %>%
+  count(session)
+
+resolutions_by_session_plot <- ggplot(resolutions_by_session, aes(x=session, y=n)) +
+  geom_point() +
+  labs(x = "Session",
+       y = "Number of Resolutions",
+       title = "Resolutions by Session")
+
+resolutions_by_session_plot
+
+graphs = list(yes = vote_counts_yes_plot,
+              no = vote_counts_no_plot,
+              abstain = vote_counts_abstain_plot,
+              year = resolutions_by_year_plot,
+              session = resolutions_by_session_plot)
+
+saveRDS(graphs, "UN-Resolutions/graphs.rds")
+
+
+```
